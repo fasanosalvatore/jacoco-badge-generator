@@ -2,22 +2,22 @@
 #
 # jacoco-badge-generator: Coverage badges, and pull request coverage checks,
 # from JaCoCo reports in GitHub Actions.
-# 
+#
 # Copyright (c) 2020-2021 Vincent A Cicirello
 # https://www.cicirello.org/
 #
 # MIT License
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,7 +25,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# 
+#
 
 import csv
 import sys
@@ -59,7 +59,7 @@ transform="scale(.1)" fill="#fff" textLength="{2}">{0}</text>\
 
 defaultColors = [ "#4c1", "#97ca00", "#a4a61d", "#dfb317", "#fe7d37", "#e05d44" ]
 
-def generateBadge(covStr, color, badgeType="coverage") :
+def generateBadge(covStr, color, badgeLabel) :
     """Generates the badge as a string.
 
     Keyword arguments:
@@ -77,7 +77,7 @@ def generateBadge(covStr, color, badgeType="coverage") :
         textLength += (70 * (len(covStr) - 1))
     # length of "coverage" assuming DejaVu Sans, 110pt font is 510
     # but length of "branches" is 507
-    labelTextLength = 510 if badgeType=="coverage" else 507
+    labelTextLength = len(badgeLabel)*64
     rightWidth = math.ceil(textLength / 10) + 10
     badgeWidth = 61 + rightWidth
     rightCenter = 600 + rightWidth * 5
@@ -85,7 +85,7 @@ def generateBadge(covStr, color, badgeType="coverage") :
         covStr,
         color,
         textLength,
-        badgeType,
+        badgeLabel,
         labelTextLength,
         rightWidth,
         badgeWidth,
@@ -440,6 +440,8 @@ if __name__ == "__main__" :
     generateBranchesJSON = sys.argv[15].lower() == "true"
     coverageJSON = sys.argv[16]
     branchesJSON = sys.argv[17]
+    coverageText = sys.argv[18]
+    branchesText = sys.argv[19]
 
     if onMissingReport not in {"fail", "quiet", "badges"} :
         print("ERROR: Invalid value for on-missing-report.")
@@ -454,10 +456,10 @@ if __name__ == "__main__" :
 
     jacocoFileList = jacocoCsvFile.split()
     filteredFileList = filterMissingReports(jacocoFileList, onMissingReport=="fail")
-    
+
     noReportsMissing = len(jacocoFileList)==len(filteredFileList)
 
-    if len(filteredFileList) > 0 and (noReportsMissing or onMissingReport!="quiet") :  
+    if len(filteredFileList) > 0 and (noReportsMissing or onMissingReport!="quiet") :
 
         cov, branches = computeCoverage(filteredFileList)
 
@@ -485,7 +487,7 @@ if __name__ == "__main__" :
         if failOnBranchesDecrease and generateBranchesJSON and coverageDecreasedEndpoint(branches, branchesJSONWithPath, "branches") :
             print("Failing the workflow run.")
             sys.exit(1)
-            
+
         if (generateCoverageBadge or generateBranchesBadge or generateCoverageJSON or generateBranchesJSON) and badgesDirectory != "" :
             createOutputDirectories(badgesDirectory)
 
@@ -493,7 +495,7 @@ if __name__ == "__main__" :
             covStr, color = badgeCoverageStringColorPair(cov, colorCutoffs, colors)
             if generateCoverageBadge :
                 with open(coverageBadgeWithPath, "w") as badge :
-                    badge.write(generateBadge(covStr, color))
+                    badge.write(generateBadge(covStr, color, "coverage", coverageText))
             if generateCoverageJSON :
                 with open(coverageJSONWithPath, "w") as endpoint :
                     json.dump(generateDictionaryForEndpoint(covStr, color, "coverage"), endpoint, sort_keys=True)
@@ -502,15 +504,10 @@ if __name__ == "__main__" :
             covStr, color = badgeCoverageStringColorPair(branches, colorCutoffs, colors)
             if generateBranchesBadge :
                 with open(branchesBadgeWithPath, "w") as badge :
-                    badge.write(generateBadge(covStr, color, "branches"))
+                    badge.write(generateBadge(covStr, color, "branches", branchesText))
             if generateBranchesJSON :
                 with open(branchesJSONWithPath, "w") as endpoint :
                     json.dump(generateDictionaryForEndpoint(covStr, color, "branches"), endpoint, sort_keys=True)
 
         print("::set-output name=coverage::" + str(cov))
         print("::set-output name=branches::" + str(branches))
-    
-
-
-                
-            

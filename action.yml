@@ -1,21 +1,21 @@
-# jacoco-badge-generator: Coverage badges, and pull request coverage checks, 
+# jacoco-badge-generator: Coverage badges, and pull request coverage checks,
 # from JaCoCo reports in GitHub Actions
-# 
+#
 # Copyright (c) 2020-2021 Vincent A Cicirello
 # https://www.cicirello.org/
 #
 # MIT License
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,16 +23,16 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# 
+#
 
 
 name: 'jacoco-badge-generator'
 description: 'JaCoCo coverage badges and pull request coverage checks in GitHub Actions'
-branding: 
+branding:
   icon: 'book-open'
   color: 'green'
 inputs:
-  jacoco-csv-file:  
+  jacoco-csv-file:
     description: 'Full path, relative to the root of the repository, to the jacoco csv file(s), including filename(s)'
     required: false
     default: 'target/site/jacoco/jacoco.csv'
@@ -100,6 +100,14 @@ inputs:
     description: 'The filename of the branches coverage JSON endpoint.'
     required: false
     default: 'branches.json'
+  coverage-text:
+    description: 'The label of the coverage badge.'
+    required: false
+    default: 'coverage'
+  branches-text:
+    description: 'The label of the branches coverage badge.'
+    required: false
+    default: 'branches'
 outputs:
   coverage:
     description: 'The jacoco coverage percentage as computed from the data in the jacoco.csv file.'
@@ -126,3 +134,5 @@ runs:
     - ${{ inputs.generate-branches-endpoint }}
     - ${{ inputs.coverage-endpoint-filename }}
     - ${{ inputs.branches-endpoint-filename }}
+    - ${{ inputs.coverage-text }}
+    - ${{ inputs.branches-text }}
